@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Data.Contexts;
 
 namespace Business.Repos
 {
@@ -40,11 +41,11 @@ namespace Business.Repos
 
     public abstract class BaseRepo <TEntity, TModel> : IBaseRepo<TEntity, TModel> where TEntity : class
     {
-        protected readonly DbContext _context;
+        protected readonly AppDbContext _context;
         protected readonly DbSet<TEntity> _dbSet;
         protected readonly IMappingFactory<TEntity, TModel> _mappingFactory;
 
-        protected BaseRepo(DbContext context, IMappingFactory<TEntity, TModel> mappingFactory)
+        protected BaseRepo(AppDbContext context, IMappingFactory<TEntity, TModel> mappingFactory)
         {
             _context = context;
             _dbSet = context.Set<TEntity>();

@@ -15,7 +15,7 @@ namespace Business.Repos
     {
     }
 
-    public class ClientRepo(DbContext context, IMappingFactory<ClientEntity, ClientModel> mappingFactory)
+    public class ClientRepo(AppDbContext context, IMappingFactory<ClientEntity, ClientModel> mappingFactory)
         : BaseRepo<ClientEntity, ClientModel>(context, mappingFactory), IClientRepo
     {
 

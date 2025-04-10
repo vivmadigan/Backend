@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Business.Factories;
 using Business.Models;
+using Data.Contexts;
 using Data.Enitities;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +15,7 @@ namespace Business.Repos
     {
     }
 
-    public class ProjectRepo(DbContext context, IMappingFactory<ProjectEntity, ProjectModel> mappingFactory)
+    public class ProjectRepo(AppDbContext context, IMappingFactory<ProjectEntity, ProjectModel> mappingFactory)
         : BaseRepo<ProjectEntity, ProjectModel>(context, mappingFactory), IProjectRepo
     {
 

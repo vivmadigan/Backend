@@ -1,6 +1,8 @@
+using Business.Dtos;
 using Business.Factories;
 using Business.Models;
 using Business.Repos;
+using Business.Services;
 using Data.Contexts;
 using Data.Enitities;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +27,7 @@ builder.Services.AddScoped<IProjectRepo, ProjectRepo>();
 builder.Services.AddScoped<IStatusRepo, StatusRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 
+builder.Services.AddScoped<IProjectService, ProjectService>();
 
 
 builder.Services.AddScoped<IMappingFactory<UserEntity, UserModel>, UserMappingFactory>();
@@ -32,7 +35,9 @@ builder.Services.AddScoped<IMappingFactory<ClientEntity, ClientModel>, ClientMap
 builder.Services.AddScoped<IMappingFactory<StatusEntity, StatusModel>, StatusMappingFactory>();
 builder.Services.AddScoped<IMappingFactory<ProjectEntity, ProjectModel>, ProjectMappingFactory>();
 
+builder.Services.AddScoped<IFormToModelMapper<AddProjectForm, ProjectModel>, AddProjectFormMapper>();
 
+builder.Services.AddScoped<IProjectService, ProjectService>();
 
 var app = builder.Build();
 
