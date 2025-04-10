@@ -1,4 +1,8 @@
+using Business.Factories;
+using Business.Models;
+using Business.Repos;
 using Data.Contexts;
+using Data.Enitities;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +19,19 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new() { Title = "alpha_project.API", Version = "v1" });
 });
+
+builder.Services.AddScoped<IClientRepo, ClientRepo>();
+builder.Services.AddScoped<IProjectRepo, ProjectRepo>();
+builder.Services.AddScoped<IStatusRepo, StatusRepo>();
+builder.Services.AddScoped<IUserRepo, UserRepo>();
+
+
+
+builder.Services.AddScoped<IMappingFactory<UserEntity, UserModel>, UserMappingFactory>();
+builder.Services.AddScoped<IMappingFactory<ClientEntity, ClientModel>, ClientMappingFactory>();
+builder.Services.AddScoped<IMappingFactory<StatusEntity, StatusModel>, StatusMappingFactory>();
+builder.Services.AddScoped<IMappingFactory<ProjectEntity, ProjectModel>, ProjectMappingFactory>();
+
 
 
 var app = builder.Build();
