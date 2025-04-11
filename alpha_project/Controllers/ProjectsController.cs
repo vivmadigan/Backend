@@ -40,12 +40,32 @@ namespace alpha_project.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProjectById(string id)
         {
-            var project = await _projectService.GetProjectByIdAsync(id);
+            var result = await _projectService.GetProjectByIdAsync(id);
 
-            if (project is null)
-                return NotFound($"Project with ID '{id}' was not found.");
+            if (!result.Success)
+                return StatusCode(result.StatusCode, result.ErrorMessage);
 
-            return Ok(project);
+            return Ok(result.Project);
+        }
+
+        // PUT: api/projects
+        [HttpPut]
+        public async Task<IActionResult> UpdateProject(UpdateProjectForm form)
+        {
+            var result = await _projectService.UpdateProjectAsync(form);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, result.ErrorMessage);
+            return Ok(result.Project);
+        }
+
+        // Delete: api/projects/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProject(string id)
+        {
+            var result = await _projectService.DeleteProjectAsync(id);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, result.ErrorMessage);
+            return NoContent();
         }
 
     }

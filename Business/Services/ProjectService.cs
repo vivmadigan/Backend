@@ -9,6 +9,7 @@ using Business.Factories;
 using Business.Models;
 using Business.Repos;
 using Data.Enitities;
+using Microsoft.Identity.Client;
 
 namespace Business.Services
 {
@@ -16,15 +17,18 @@ namespace Business.Services
     {
         Task<ProjectResult> CreateProjectAsync(AddProjectForm formData);
         Task<IEnumerable<ProjectModel>> GetProjectsAsync();
-        Task<ProjectModel?> GetProjectByIdAsync(string id);
+        Task<ProjectResult> GetProjectByIdAsync(string id);
+        Task<ProjectResult> DeleteProjectAsync(string id);
+        Task<ProjectResult> UpdateProjectAsync(UpdateProjectForm formData);
     }
 
     public class ProjectService(
         IProjectRepo projectRepository, IClientRepo clientRepository, IUserRepo userRepository, 
-        IFormToModelMapper<AddProjectForm, ProjectModel> formMapper) : IProjectService
+        IFormToModelMapper<AddProjectForm, ProjectModel> addFormMapper, IUpdateFormMapper<UpdateProjectForm, ProjectModel> updateFormMapper) : IProjectService
     {
         private readonly IProjectRepo _projectRepo = projectRepository;
-        private readonly IFormToModelMapper<AddProjectForm, ProjectModel> _formMapper = formMapper;
+        private readonly IFormToModelMapper<AddProjectForm, ProjectModel> _addFormMapper = addFormMapper;
+        private readonly IUpdateFormMapper<UpdateProjectForm, ProjectModel> _updateFormMapper = updateFormMapper;
         private readonly IClientRepo _clientRepo = clientRepository;
         private readonly IUserRepo _userRepo = userRepository;
         public async Task<ProjectResult> CreateProjectAsync(AddProjectForm formData)
@@ -59,7 +63,7 @@ namespace Business.Services
             }
 
             // Use mapper to get a ProjectModel from the AddProjectForm
-            var projectModel = _formMapper.MapToModel(formData);
+            var projectModel = _addFormMapper.MapToModel(formData);
 
             // Use repo's internal mapper (ProjectModel → ProjectEntity)
             await _projectRepo.AddAsync(projectModel);
@@ -92,13 +96,93 @@ namespace Business.Services
                 });
         }
 
-        public async Task<ProjectModel?> GetProjectByIdAsync(string id)
+        public async Task<ProjectResult> GetProjectByIdAsync(string id)
         {
-            return await _projectRepo.GetAsync(
+            var project = await _projectRepo.GetAsync(
                 p => p.Id == id,
                 p => p.Client,
                 p => p.User,
-                p => p.Status);
+                p => p.Status
+            );
+
+            if (project is null)
+            {
+                return new ProjectResult
+                {
+                    Success = false,
+                    StatusCode = 404,
+                    ErrorMessage = $"Project with ID '{id}' was not found."
+                };
+            }
+
+            return new ProjectResult
+            {
+                Success = true,
+                StatusCode = 200,
+                Project = project
+            };
+        }
+
+        public async Task<ProjectResult> UpdateProjectAsync(UpdateProjectForm formData)
+        {
+            {
+                if (formData is null)
+                    return new ProjectResult { Success = false, StatusCode = 400, ErrorMessage = "Form data is null." };
+
+                var existingProject = await _projectRepo.GetAsync(
+                    p => p.Id == formData.Id,
+                    p => p.Client,
+                    p => p.User,
+                    p => p.Status
+                );
+
+                if (existingProject is null)
+                    return new ProjectResult { Success = false, StatusCode = 404, ErrorMessage = $"Project with ID '{formData.Id}' not found." };
+
+                // Apply changes *onto* the already tracked object
+                _updateFormMapper.MapToExistingModel(formData, existingProject);
+
+                await _projectRepo.UpdateAsync(existingProject);
+
+                var updatedProject = await _projectRepo.GetAsync(
+                    p => p.Id == existingProject.Id,
+                    p => p.Client,
+                    p => p.User,
+                    p => p.Status
+                );
+
+                return new ProjectResult
+                {
+                    Success = true,
+                    StatusCode = 200,
+                    Project = updatedProject
+                };
+            }
+        }
+        public async Task<ProjectResult> DeleteProjectAsync(string id)
+        {
+            // Include navigation properties to avoid null reference errors during mapping
+            var project = await _projectRepo.GetAsync(
+                p => p.Id == id,
+                p => p.Client,
+                p => p.User,
+                p => p.Status
+            );
+            if (project is null)
+            {
+                return new ProjectResult
+                {
+                    Success = false,
+                    StatusCode = 404,
+                    ErrorMessage = $"Project with ID '{id}' was not found."
+                };
+            }
+            await _projectRepo.DeleteAsync(p => p.Id == id);
+            return new ProjectResult
+            {
+                Success = true,
+                StatusCode = 204
+            };
         }
     }
 }

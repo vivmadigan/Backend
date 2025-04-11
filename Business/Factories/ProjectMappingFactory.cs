@@ -29,6 +29,7 @@ namespace Business.Factories
 
         public ProjectModel MapToModel(ProjectEntity entity)
         {
+            // Maps a ProjectEntity to a ProjectModel, including safe handling of null navigation properties
             return new ProjectModel
             {
                 Id = entity.Id,
@@ -37,21 +38,25 @@ namespace Business.Factories
                 StartDate = entity.StartDate,
                 EndDate = entity.EndDate,
                 Budget = entity.Budget,
-                Client = new ClientModel
+
+                // Defensive check in case navigation properties were not eagerly loaded
+                Client = entity.Client != null ? new ClientModel
                 {
                     Id = entity.ClientId,
                     ClientName = entity.Client.ClientName,
-                },
-                User = new UserModel
+                } : null,
+
+                User = entity.User != null ? new UserModel
                 {
                     Id = entity.UserId,
                     UserName = entity.User.UserName
-                },
-                Status = new StatusModel
+                } : null,
+
+                Status = entity.Status != null ? new StatusModel
                 {
                     Id = entity.StatusId,
                     StatusName = entity.Status.StatusName
-                }
+                } : null
             };
         }
     }

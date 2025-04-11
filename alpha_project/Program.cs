@@ -36,6 +36,8 @@ builder.Services.AddScoped<IMappingFactory<StatusEntity, StatusModel>, StatusMap
 builder.Services.AddScoped<IMappingFactory<ProjectEntity, ProjectModel>, ProjectMappingFactory>();
 
 builder.Services.AddScoped<IFormToModelMapper<AddProjectForm, ProjectModel>, AddProjectFormMapper>();
+builder.Services.AddScoped<IUpdateFormMapper<UpdateProjectForm, ProjectModel>, UpdateProjectFormMapper>();
+
 
 builder.Services.AddScoped<IProjectService, ProjectService>();
 
