@@ -22,7 +22,12 @@ namespace Business.Factories
                 Budget = projectForm.Budget,
                 Client = new ClientModel { Id = projectForm.ClientId },
                 User = new UserModel { Id = projectForm.UserId },
-                Status = new StatusModel { Id = projectForm.StatusId }
+                Status = new StatusModel
+                {
+                    Id = new[] { 1, 2, 3 }.Contains(projectForm.StatusId)
+                        ? projectForm.StatusId
+                        : 1
+                }
             };
         }
     }

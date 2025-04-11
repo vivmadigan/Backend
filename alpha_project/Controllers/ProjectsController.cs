@@ -1,6 +1,7 @@
 ﻿using Business.Dtos;
 using Business.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace alpha_project.Controllers
@@ -20,12 +21,11 @@ namespace alpha_project.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProject(AddProjectForm form)
         {
-            var createdProject = await _projectService.CreateProjectAsync(form);
+            var result= await _projectService.CreateProjectAsync(form);
+            if (!result.Success)
+                return StatusCode(result.StatusCode, result.ErrorMessage);
 
-            if (createdProject is null)
-                return BadRequest("Unable to create project.");
-
-            return CreatedAtAction(nameof(GetProjectById), new { id = createdProject.Id }, createdProject);
+            return CreatedAtAction(nameof(GetProjectById), new { id = result.Project.Id }, result.Project);
         }
 
         // GET: api/projects

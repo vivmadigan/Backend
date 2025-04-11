@@ -14,21 +14,49 @@ namespace Business.Services
 {
     public interface IProjectService
     {
-        Task<ProjectModel?> CreateProjectAsync(AddProjectForm formData);
+        Task<ProjectResult> CreateProjectAsync(AddProjectForm formData);
         Task<IEnumerable<ProjectModel>> GetProjectsAsync();
         Task<ProjectModel?> GetProjectByIdAsync(string id);
     }
 
     public class ProjectService(
-        IProjectRepo projectRepository,
+        IProjectRepo projectRepository, IClientRepo clientRepository, IUserRepo userRepository, 
         IFormToModelMapper<AddProjectForm, ProjectModel> formMapper) : IProjectService
     {
         private readonly IProjectRepo _projectRepo = projectRepository;
         private readonly IFormToModelMapper<AddProjectForm, ProjectModel> _formMapper = formMapper;
-        public async Task<ProjectModel?> CreateProjectAsync(AddProjectForm formData)
+        private readonly IClientRepo _clientRepo = clientRepository;
+        private readonly IUserRepo _userRepo = userRepository;
+        public async Task<ProjectResult> CreateProjectAsync(AddProjectForm formData)
         {
             if (formData is null)
-                return null;
+            {
+                return new ProjectResult
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    ErrorMessage = "Form data is null."
+                };
+            }
+
+            if (!await _clientRepo.ExistsAsync(c => c.Id == formData.ClientId))
+            {
+                return new ProjectResult
+                {
+                    Success = false,
+                    StatusCode = 404,
+                    ErrorMessage = "Client not found in database."
+                };
+            }
+            if (!await _userRepo.ExistsAsync(u => u.Id == formData.UserId))
+            {
+                return new ProjectResult
+                {
+                    Success = false,
+                    StatusCode = 404,
+                    ErrorMessage = "User not found in database."
+                };
+            }
 
             // Use mapper to get a ProjectModel from the AddProjectForm
             var projectModel = _formMapper.MapToModel(formData);
@@ -37,12 +65,18 @@ namespace Business.Services
             await _projectRepo.AddAsync(projectModel);
 
             // Return newly created project including all navigation properties
-            return await _projectRepo.GetAsync(
+           var fullProject = await _projectRepo.GetAsync(
                 p => p.Id == projectModel.Id,
                 p => p.Client,
                 p => p.User,
                 p => p.Status
             );
+            return new ProjectResult
+            {
+                Success = true,
+                StatusCode = 201,
+                Project = fullProject
+            };
         }
 
         public async Task<IEnumerable<ProjectModel>> GetProjectsAsync()
