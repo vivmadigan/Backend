@@ -60,9 +60,9 @@ namespace Business.Repos
         }
 
         public virtual async Task UpdateAsync(TModel model)
-        { 
+        {
             var entity = _mappingFactory.MapToEntity(model);
-             _dbSet.Update(entity);
+            _dbSet.Update(entity);
             await _context.SaveChangesAsync();
         }
 
