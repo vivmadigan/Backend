@@ -20,9 +20,9 @@ namespace Business.Factories
                 StartDate = model.StartDate,
                 EndDate = model.EndDate,
                 Budget = model.Budget,
-                ClientId = model.Client?.Id,
-                UserId = model.User?.Id,
-                StatusId = model.Status?.Id ?? 0
+                ClientId = model.Client.Id,
+                UserId = model.User.Id,
+                StatusId = model.Status.Id
 
             };
         }

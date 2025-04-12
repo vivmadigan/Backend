@@ -8,7 +8,7 @@ namespace Business.Factories
 {
     public interface IUpdateFormMapper<TForm, TModel>
     {
-        void MapToExistingModel(TForm form, TModel model);
+        TModel MapToUpdateModel(TForm form);
     }
 
 }
