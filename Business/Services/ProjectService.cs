@@ -23,7 +23,7 @@ namespace Business.Services
     }
 
     public class ProjectService(
-        IProjectRepo projectRepository, IClientRepo clientRepository, IUserRepo userRepository, 
+        IProjectRepo projectRepository, IClientRepo clientRepository, IUserRepo userRepository, IStatusRepo statusRepository,
         IFormToModelMapper<AddProjectForm, ProjectModel> addFormMapper, IUpdateFormMapper<UpdateProjectForm, ProjectModel> updateFormMapper) : IProjectService
     {
         private readonly IProjectRepo _projectRepo = projectRepository;
@@ -31,6 +31,7 @@ namespace Business.Services
         private readonly IUpdateFormMapper<UpdateProjectForm, ProjectModel> _updateFormMapper = updateFormMapper;
         private readonly IClientRepo _clientRepo = clientRepository;
         private readonly IUserRepo _userRepo = userRepository;
+        private readonly IStatusRepo _statusRepo = statusRepository;
         public async Task<ProjectResult> CreateProjectAsync(AddProjectForm formData)
         {
             if (formData is null)
@@ -49,7 +50,7 @@ namespace Business.Services
                 {
                     Success = false,
                     StatusCode = 404,
-                    ErrorMessage = "Client not found in database."
+                    ErrorMessage = $"Client with ID '{formData.ClientId}' was not found."
                 };
             }
             if (!await _userRepo.ExistsAsync(u => u.Id == formData.UserId))
@@ -58,7 +59,7 @@ namespace Business.Services
                 {
                     Success = false,
                     StatusCode = 404,
-                    ErrorMessage = "User not found in database."
+                    ErrorMessage = $"User with ID '{formData.UserId}' was not found."
                 };
             }
 
@@ -125,40 +126,75 @@ namespace Business.Services
 
         public async Task<ProjectResult> UpdateProjectAsync(UpdateProjectForm formData)
         {
+            if (formData is null)
             {
-                if (formData is null)
-                    return new ProjectResult { Success = false, StatusCode = 400, ErrorMessage = "Form data is null." };
-
-                var existingProject = await _projectRepo.GetAsync(
-                    p => p.Id == formData.Id,
-                    p => p.Client,
-                    p => p.User,
-                    p => p.Status
-                );
-
-                if (existingProject is null)
-                    return new ProjectResult { Success = false, StatusCode = 404, ErrorMessage = $"Project with ID '{formData.Id}' not found." };
-
-                // Apply changes *onto* the already tracked object
-                _updateFormMapper.MapToExistingModel(formData, existingProject);
-
-                await _projectRepo.UpdateAsync(existingProject);
-
-                var updatedProject = await _projectRepo.GetAsync(
-                    p => p.Id == existingProject.Id,
-                    p => p.Client,
-                    p => p.User,
-                    p => p.Status
-                );
-
                 return new ProjectResult
                 {
-                    Success = true,
-                    StatusCode = 200,
-                    Project = updatedProject
+                    Success = false,
+                    StatusCode = 400,
+                    ErrorMessage = "Form data is null."
                 };
             }
+
+            if (!await _projectRepo.ExistsAsync(p => p.Id == formData.Id))
+            {
+                return new ProjectResult
+                {
+                    Success = false,
+                    StatusCode = 404,
+                    ErrorMessage = $"Project with ID '{formData.Id}' was not found."
+                };
+            }
+
+            if (!await _clientRepo.ExistsAsync(c => c.Id == formData.ClientId))
+            {
+                return new ProjectResult
+                {
+                    Success = false,
+                    StatusCode = 404,
+                    ErrorMessage = $"Client with ID '{formData.ClientId}' was not found."
+                };
+            }
+
+            if (!await _userRepo.ExistsAsync(u => u.Id == formData.UserId))
+            {
+                return new ProjectResult
+                {
+                    Success = false,
+                    StatusCode = 404,
+                    ErrorMessage = $"User with ID '{formData.UserId}' was not found."
+                };
+            }
+
+            if (!await _statusRepo.ExistsAsync(s => s.Id == formData.StatusId))
+            {
+                return new ProjectResult
+                {
+                    Success = false,
+                    StatusCode = 404,
+                    ErrorMessage = $"Status with ID '{formData.StatusId}' was not found."
+                };
+            }
+
+            var modelToUpdate = _updateFormMapper.MapToUpdateModel(formData); // New object
+
+            await _projectRepo.UpdateAsync(modelToUpdate);
+
+            var updatedProject = await _projectRepo.GetAsync(
+                p => p.Id == formData.Id,
+                p => p.Client,
+                p => p.User,
+                p => p.Status
+            );
+
+            return new ProjectResult
+            {
+                Success = true,
+                StatusCode = 200,
+                Project = updatedProject
+            };
         }
+
         public async Task<ProjectResult> DeleteProjectAsync(string id)
         {
             // Include navigation properties to avoid null reference errors during mapping

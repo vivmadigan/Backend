@@ -28,6 +28,10 @@ builder.Services.AddScoped<IStatusRepo, StatusRepo>();
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IStatusService, StatusService>();
+
 
 
 builder.Services.AddScoped<IMappingFactory<UserEntity, UserModel>, UserMappingFactory>();

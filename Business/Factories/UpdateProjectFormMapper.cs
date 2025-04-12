@@ -10,16 +10,20 @@ namespace Business.Factories
 {
     public class UpdateProjectFormMapper : IUpdateFormMapper<UpdateProjectForm, ProjectModel>
     {
-        public void MapToExistingModel(UpdateProjectForm form, ProjectModel model)
+        public ProjectModel MapToUpdateModel(UpdateProjectForm form)
         {
-            model.ProjectName = form.ProjectName;
-            model.Description = form.Description;
-            model.StartDate = form.StartDate;
-            model.EndDate = form.EndDate;
-            model.Budget = form.Budget;
-            model.Client = new ClientModel { Id = form.ClientId };
-            model.User = new UserModel { Id = form.UserId };
-            model.Status = new StatusModel { Id = form.StatusId };
+            return new ProjectModel
+            {
+                Id = form.Id,
+                ProjectName = form.ProjectName,
+                Description = form.Description,
+                StartDate = form.StartDate,
+                EndDate = form.EndDate,
+                Budget = form.Budget,
+                Client = new ClientModel { Id = form.ClientId },
+                User = new UserModel { Id = form.UserId },
+                Status = new StatusModel { Id = form.StatusId }
+            };
         }
     }
 }
