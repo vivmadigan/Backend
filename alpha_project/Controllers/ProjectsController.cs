@@ -1,4 +1,5 @@
-﻿using Business.Dtos;
+﻿using alpha_project.Filters;
+using Business.Dtos;
 using Business.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -8,6 +9,7 @@ namespace alpha_project.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [ApiKeyAuthorize]
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
