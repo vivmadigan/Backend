@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace alpha_project.Filters
 {
+    // This is something i needed some help with to put into place
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class ApiKeyAuthorizeAttribute : Attribute, IAsyncActionFilter
